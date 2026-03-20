@@ -1,0 +1,41 @@
+name: BCS Calendar HTML Update
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # every hour on the hour
+  workflow_dispatch:        # manual trigger from GitHub UI
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic google-auth google-auth-oauthlib google-api-python-client
+
+      - name: Run HTML update agent
+        env:
+          ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_CLIENT_ID:      ${{ secrets.GMAIL_CLIENT_ID }}
+          GMAIL_CLIENT_SECRET:  ${{ secrets.GMAIL_CLIENT_SECRET }}
+          GMAIL_REFRESH_TOKEN:  ${{ secrets.GMAIL_REFRESH_TOKEN }}
+          LOOKBACK_HOURS:       '2'
+        run: python scripts/update_html.py
+
+      - name: Commit if HTML changed
+        run: |
+          git config user.name  "BCS Bot"
+          git config user.email "bot@bcs-calendar"
+          git add bcs_calendar.html
+          git diff --staged --quiet || git commit -m "🌿 Auto-update $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
