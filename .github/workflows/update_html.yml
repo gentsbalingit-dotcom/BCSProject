@@ -30,7 +30,7 @@ jobs:
           GMAIL_CLIENT_SECRET:  ${{ secrets.GMAIL_CLIENT_SECRET }}
           GMAIL_REFRESH_TOKEN:  ${{ secrets.GMAIL_REFRESH_TOKEN }}
           LOOKBACK_HOURS:       '2'
-        run: python scripts/update_html.py
+        run: python update_html.py
 
       - name: Commit if HTML changed
         run: |
